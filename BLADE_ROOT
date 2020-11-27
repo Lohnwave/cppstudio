@@ -1,0 +1,25 @@
+cc_config(
+    cxxflags='-std=c++14',
+    extra_incs=[
+        'thirdparty/protobuf-3.6.1/src',
+        'thirdparty',
+        #'prdictor/tensorflow-deps/include',
+        #'predicotr/tensorflow-deps/include/third_party/eigen',
+    ],
+    warnings = [
+        '-g',
+        '-Wno-unused-local-typedefs',
+        '-Wno-missing-filed-initializers',
+        '-Wno-unused-function',
+        '-Wno-format-overflow',
+        '-Wno-unused-variable',
+        '-Wno-format-truncation',
+        '-Wno-implicit-fallthrough',
+        '-Wendif-labels',
+        '-Werror=unused-label',
+        '-Werror=unused-result',
+        '-Werror=unused-value',
+        '-Werror=unused-variable',
+        '-Werror=write-strings',
+    ]
+)

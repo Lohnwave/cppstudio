@@ -1,0 +1,18 @@
+{
+    "buckets":[
+    {
+        "ruleId":121,
+        "priority":2,
+        "statusfilter": {
+            "user": "positive",
+        }
+    },
+    {
+        "ruleId":120,
+        "priority":1,
+        "statusfilter": {
+            "user": "nagative",
+        }
+    }
+]
+}
