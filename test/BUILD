@@ -4,8 +4,9 @@ cc_test(
     deps = [
         '//thirdparty/gtest:gtest',
         '//thirdparty/jsoncpp:jsoncpp',
+        '//thirdparty/glog:glog',
     ],
     testdata = [
         './conf'
-    ]
+    ],
 )

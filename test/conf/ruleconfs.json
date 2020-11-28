@@ -5,13 +5,14 @@
         "priority":2,
         "statusfilter": {
             "user": "positive",
+            "homepage": "true"
         }
     },
     {
         "ruleId":120,
         "priority":1,
         "statusfilter": {
-            "user": "nagative",
+            "user": "nagative"
         }
     }
 ]
