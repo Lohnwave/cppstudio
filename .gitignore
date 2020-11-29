@@ -2,3 +2,4 @@ blade-bin
 build64_release
 .vscode
 .sconsign.dblite
+.blade.*
