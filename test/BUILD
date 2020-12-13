@@ -10,3 +10,11 @@ cc_test(
         './conf'
     ],
 )
+
+cc_binary(
+    name = 'openmp',
+    srcs = 'openmp.cc',
+    deps = [
+        '//thirdparty/glog:glog',
+    ],
+)
