@@ -1,3 +1,6 @@
+COPT = [
+    "-fopenmp",
+]
 cc_test(
     name = 'json_read_test',
     srcs = 'json_read_test.cc',
@@ -16,5 +19,9 @@ cc_binary(
     srcs = 'openmp.cc',
     deps = [
         '//thirdparty/glog:glog',
+        '#gomp'
     ],
+    extra_cppflags = [
+        "-fopenmp",
+    ]
 )

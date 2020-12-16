@@ -4,7 +4,13 @@
 #include <unordered_set>
 #include <memory>
 #include <iostream>
-
+#include <omp.h>
+#include <sys/time.h>
+static long GetCurrentTimeUs() {
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return t.tv_sec*1000000 + t.tv_usec;
+}
 const int INSTANCE_SIZE = 1200;
 const int RULE_SIZE = 45;
 class Instance {
@@ -45,7 +51,13 @@ public:
         return true;
     }
     bool validateRule1(int slotNum, std::vector<InstancePtr>& instance_s) {
-#pragma omp parallel for
+#ifndef _OPENMP
+    fprintf(stderr, "OpenMP not supported");
+#endif
+long t0 = GetCurrentTimeUs();
+#ifdef _OPENMP
+    #pragma omp parallel for
+#endif
         for ( int priority = 0; priority < priority_rules_.size(); ++ priority) {
             auto& rules = priority_rules_.at(priority);
             for (int rule_i = 0; rule_i < rules.size(); ++ rule_i) {
@@ -53,12 +65,14 @@ public:
                     auto& instance = instance_s.at(ins_i);
                     if (instance->HasTag(rules.at(rule_i)) ) {
                         priority_instance_s_.at(priority).emplace_back(instance);
-                        LOG(INFO) << "add instance: " << ins_i;
-                        usleep(10000);
+                        // LOG(INFO) << "add instance: " << ins_i;
+                        // usleep(10000);
                     }
                 }
             }
         }
+        long t1 = GetCurrentTimeUs();
+        LOG(INFO) << "time cost: " << t1 - t0;
         return true;
     }
     bool validateRule2(int slotNum, std::vector<InstancePtr>& instance_s) {
@@ -78,7 +92,7 @@ bool GetInstance(
             InstancePtr ins = std::make_shared<Instance> ();
             ins->SetTag(tagset);
             instance_s.emplace_back(ins);
-            usleep(1000);
+            // usleep(1000);
         }
 }
 
@@ -93,10 +107,10 @@ int main()
     GetInstance(tagset, instance_s);
 
     int slotNum = 10;
-    while(1) {
+    // while(1) {
         Rerank rerank;
         rerank.rank(instance_s, slotNum);
-    }
+    // }
 
 
 
