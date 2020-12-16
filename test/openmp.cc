@@ -55,9 +55,9 @@ public:
     fprintf(stderr, "OpenMP not supported");
 #endif
 long t0 = GetCurrentTimeUs();
-#ifdef _OPENMP
+// #ifdef _OPENMP
     #pragma omp parallel for
-#endif
+// #endif
         for ( int priority = 0; priority < priority_rules_.size(); ++ priority) {
             auto& rules = priority_rules_.at(priority);
             for (int rule_i = 0; rule_i < rules.size(); ++ rule_i) {
