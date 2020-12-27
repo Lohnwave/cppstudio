@@ -33,6 +33,8 @@ cc_binary(
     deps = [
         '//thirdparty/glog:glog',
         '//thirdparty/jemalloc:jemalloc',
+        '#dl',
+        '#pthread',
         '#gomp'
     ],
     #optimize=['O3'],
