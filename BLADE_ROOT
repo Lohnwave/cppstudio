@@ -1,13 +1,16 @@
 cc_config(
-    cxxflags='-std=c++14',
+    cxxflags=['-std=c++14', '-msse4.2'],
     extra_incs=[
         'thirdparty/protobuf-3.6.1/src',
         'thirdparty',
+        #'thirdparty/jemalloc/include'
         #'prdictor/tensorflow-deps/include',
         #'predicotr/tensorflow-deps/include/third_party/eigen',
     ],
     warnings = [
         '-g',
+        '-Wall',
+        '-Wextra',
         '-Wno-unused-local-typedefs',
         '-Wno-missing-filed-initializers',
         '-Wno-unused-function',
@@ -21,5 +24,17 @@ cc_config(
         '-Werror=unused-value',
         '-Werror=unused-variable',
         '-Werror=write-strings',
-    ]
+    ],
+    cxx_warnings = [
+        '-Wno-invalid-offsetof',
+        '-Wnon-virtual-dtor',
+        '-Woverloaded-virtual',
+        '-Wvla',
+        '-Werror=non-virtual-dtor',
+        '-Werror=overloaded-virtual',
+        '-Werror=vla',
+    ],
+    optimize = ['-O3'],
+    benchmark_libs=['//toft/base:benchmark'],
+    benchmark_main_libs=['//toft/base:benchmark_main'],
 )
