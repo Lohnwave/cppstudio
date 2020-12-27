@@ -1,4 +1,6 @@
 #include "thirdparty/glog/logging.h"
+#include "toft/base/date_utils.h"
+#include "toft/base/string_util.h"
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -6,11 +8,13 @@
 #include <iostream>
 #include <omp.h>
 #include <sys/time.h>
-static long GetCurrentTimeUs() {
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return t.tv_sec*1000000 + t.tv_usec;
-}
+
+using namespace toft;
+// static long GetCurrentTimeUs() {
+//     struct timeval t;
+//     gettimeofday(&t, NULL);
+//     return t.tv_sec*1000000 + t.tv_usec;
+// }
 const int INSTANCE_SIZE = 1200;
 const int RULE_SIZE = 45;
 class Instance {
@@ -54,7 +58,7 @@ public:
 #ifndef _OPENMP
     fprintf(stderr, "OpenMP not supported");
 #endif
-long t0 = GetCurrentTimeUs();
+long t0 = DateUtils::GetCurrentTimeUs();
 // #ifdef _OPENMP
     #pragma omp parallel for
 // #endif
@@ -71,7 +75,7 @@ long t0 = GetCurrentTimeUs();
                 }
             }
         }
-        long t1 = GetCurrentTimeUs();
+        long t1 = DateUtils::GetCurrentTimeUs();
         LOG(INFO) << "time cost: " << t1 - t0;
         return true;
     }
@@ -112,7 +116,11 @@ int main()
         rerank.rank(instance_s, slotNum);
     // }
 
-
-
+    std::vector<std::string> str_vec;
+    std::string str("lohn:high");
+    StringUtil::splitKeyValue(str, ':', str_vec);
+    for (auto& str : str_vec) {
+        LOG(INFO) << str;
+    }
     return 0;
 }
