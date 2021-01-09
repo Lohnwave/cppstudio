@@ -33,6 +33,7 @@ cc_binary(
     deps = [
         '//thirdparty/glog:glog',
         '//thirdparty/jemalloc:jemalloc',
+        '//thirdparty/muduo/base:muduo_base',
         '#dl',
         '#pthread',
         '#gomp'

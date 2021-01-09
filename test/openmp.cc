@@ -1,4 +1,7 @@
 #include "thirdparty/glog/logging.h"
+#include "thirdparty/muduo/base/ThreadPool.h"
+#include "thirdparty/muduo/base/Logging.h"
+
 #include "toft/base/date_utils.h"
 #include "toft/base/string_util.h"
 #include <string>
@@ -76,7 +79,7 @@ long t0 = DateUtils::GetCurrentTimeUs();
             }
         }
         long t1 = DateUtils::GetCurrentTimeUs();
-        LOG(INFO) << "time cost: " << t1 - t0;
+        LOG_INFO<< "time cost: " << t1 - t0;
         return true;
     }
     bool validateRule2(int slotNum, std::vector<InstancePtr>& instance_s) {
@@ -106,7 +109,7 @@ int main()
     tagset.insert("news");
     tagset.insert("搞笑");
     tagset.insert("vedio");
-
+    LOG_INFO << "test muduo.....";
     std::vector<InstancePtr> instance_s;
     GetInstance(tagset, instance_s);
 
@@ -120,7 +123,7 @@ int main()
     std::string str("lohn:high");
     StringUtil::splitKeyValue(str, ':', str_vec);
     for (auto& str : str_vec) {
-        LOG(INFO) << str;
+        LOG_INFO << str;
     }
     return 0;
 }
