@@ -3,6 +3,7 @@ cc_config(
     extra_incs=[
         'thirdparty/protobuf-3.6.1/src',
         'thirdparty',
+        'thirdparty/boost:boost',
         #'thirdparty/jemalloc/include'
         #'prdictor/tensorflow-deps/include',
         #'predicotr/tensorflow-deps/include/third_party/eigen',
@@ -35,6 +36,6 @@ cc_config(
         '-Werror=vla',
     ],
     optimize = ['-O3'],
-    benchmark_libs=['//toft/base:benchmark'],
-    benchmark_main_libs=['//toft/base:benchmark_main'],
+    #benchmark_libs=['//toft/base:benchmark'],
+    #benchmark_main_libs=['//toft/base:benchmark_main'],
 )
