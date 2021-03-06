@@ -1,3 +1,11 @@
+/*
+ * @Author: Lohnwave
+ * @Date: 2021-03-06 11:24:34
+ * @LastEditors: Lohnwave
+ * @LastEditTime: 2021-03-06 19:31:09
+ * @Descripttion: 
+ * @version: 
+ */
 #include "methodthirdparty/dict/param_pool.h"
 #include "thirdparty/muduo/base/Logging.h"
 #include "toft/base/string_util.h"
