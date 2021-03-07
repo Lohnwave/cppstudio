@@ -1,3 +1,8 @@
+# install scons
+yum install scons
+# install devtoolset
+yum install devtoolset-8-toolchain
+./opt/rh/devtoolset-8/enable #把这个加到～/.bash_profile
 # blade install
 cd ../thirdparty/typhoon-blade/./install
 # gflags install
