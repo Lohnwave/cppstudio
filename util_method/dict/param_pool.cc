@@ -2,17 +2,18 @@
  * @Author: Lohnwave
  * @Date: 2021-03-06 11:24:34
  * @LastEditors: Lohnwave
- * @LastEditTime: 2021-03-06 19:31:09
+ * @LastEditTime: 2021-03-27 15:48:17
  * @Descripttion: 
  * @version: 
  */
-#include "methodthirdparty/dict/param_pool.h"
+#include "util_method/dict/param_pool.h"
+#include "util_method/base/string_util.h"
 #include "thirdparty/muduo/base/Logging.h"
-#include "toft/base/string_util.h"
+#include "toft/crypto/hash/md5.h"
 #include <fstream>
 #include <sstream>
-using namespace toft;
-namespace methodthirdparty {
+
+namespace util_method {
 int ParamPool::Init(const std::string& path, std::vector<std::string>& conf_names) {
     // for ESC conf api get conf files from conf center
     std::chrono::milliseconds dura(10000); //10 s
@@ -26,7 +27,7 @@ int ParamPool::Init(const std::string& path, std::vector<std::string>& conf_name
         std::ifstream input(config_file);
         // Wait at most one minute to make sure the initialization is successful
         int wait_count = 0;
-        while(!input.is_open() && wait_count < 60) {
+        while(!input.is_open() && wait_count < 30) {
             std::this_thread::sleep_for(dura/10);
             wait_count ++;
         }
@@ -227,17 +228,23 @@ void* ParamPool::GetPredictParam(const std::string& param_name) {
 }
 uint32_t ParamPool::ParamUpdate() {
     uint32_t success_count = 0;
+    bool md5_change_sign = false;
+    for (uint32_t file_i = 0; file_i < config_files_.size(); ++ file_i) {
+        if (Checkmd5(config_files_[file_i])) {
+            md5_change_sign = true;
+        }
+    }
     for (uint32_t file_i = 0; file_i < config_files_.size(); ++ file_i) {
         struct stat statbuf;
         if(stat(config_files_[file_i].c_str(), &statbuf) == -1) {
-            LOG_ERROR << config_files_[file_i] << " not exist";
+            LOG_WARNING << config_files_[file_i] << " not exist";
             continue;
         }
         if (!(S_ISREG(statbuf.st_mode))) {
             LOG_ERROR << config_files_[file_i] << " is not valid";
             continue;
         }
-        if (files_last_update_time_ < statbuf.st_mtime) {
+        if (files_last_update_time_ < statbuf.st_mtime && md5_change_sign) {
             LOG_INFO << "updateing: " << config_files_[file_i] << " ...";
             if (file_i == 0) {
                 param_buffers_[1-param_buf_index_] = std::make_shared<PredictParametersConfig>();
@@ -276,6 +283,35 @@ bool ParamPool::Update() {
     LOG_INFO << "ParamPool: finished updated " << success_count << " files";
     return true;
 }
+bool ParamPool::Checkmd5(const std::string& config_file) {
+    std::ifstream input(config_file);
+    std::ostringstream file_data;
+    char ch;
+    while (file_data&&input.get(ch)) {
+        file_data.put(ch);
+    }
+    if (file_data.str().length() == 0) {
+        return false;
+    }
+    toft::MD5 md5;
+    md5.Init();
+    md5.Update(file_data.str());
+    std::string file_content_md5 = std::move(md5.HexFinal());
+    auto iter = config_file_md5_.find(config_file);
+    if (iter == config_file_md5_.end()) {
+        config_file_md5_.insert(std::make_pair(config_file, file_content_md5));
+        LOG_INFO << "ParamPool: " << config_file << " md5=" << file_content_md5;
+    } else {
+        if (iter->second == file_content_md5) {
+            LOG_INFO << "ParamPool: " << config_file << " unchanged";
+            return false;
+        } else {
+            iter->second = file_content_md5;
+            LOG_INFO << "ParamPool: " << config_file << " is changed md5=" << file_content_md5;
+        }
+    }
+    return true;
+}
 bool ParamPool::ParamIsRegistered(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->param_get_method.find(param_name);
     if (it != param_buffers_[param_buf_index_]->param_get_method.end()) {
@@ -284,4 +320,4 @@ bool ParamPool::ParamIsRegistered(const std::string& param_name) {
     return false;
 }
 
-} // end namespace methodthirdparty
+} // end namespace util_method

@@ -1,11 +1,19 @@
-#include "methodthirdparty/dict/param_pool.h"
+/*
+ * @Author: Lohnwave
+ * @Date: 2021-03-27 13:10:24
+ * @LastEditors: Lohnwave
+ * @LastEditTime: 2021-03-27 14:30:54
+ * @Descripttion: 
+ * @version: 
+ */
+#include "util_method/dict/param_pool.h"
 #include "thirdparty/gtest/gtest.h"
 #include "thirdparty/muduo/base/Logging.h"
 #include <iostream>
 #include <vector>
 #include <string>
 
-using namespace methodthirdparty;
+using namespace util_method;
 TEST(param_pool, conf1) {
 
     std::vector<std::string> conf_names(1,"param_file.json");

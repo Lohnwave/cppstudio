@@ -4,6 +4,7 @@ cc_library(
     deps = [
         '//thirdparty/muduo/base:muduo_base',
         '//thirdparty/jsoncpp:jsoncpp',
+        '//toft/crypto/hash:md5',
     ]
 )
 
