@@ -1,7 +1,7 @@
 cc_config(
-    cxxflags=['-std=c++14', '-msse4.2'],
+    cxxflags=['-std=gnu++14', '-msse4.2'],
     extra_incs=[
-        'thirdparty/protobuf-3.15.3/src',
+        'thirdparty/protobuf-3.6.1/src',
         'thirdparty',
         'thirdparty/boost:boost',
         #'thirdparty/jemalloc/include'
