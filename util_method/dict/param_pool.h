@@ -2,7 +2,7 @@
  * @Author: Lohnwave
  * @Date: 2021-03-27 13:31:32
  * @LastEditors: Lohnwave
- * @LastEditTime: 2021-05-16 16:22:13
+ * @LastEditTime: 2021-05-16 16:37:09
  * @Descripttion: 
  * @version: 
  */
@@ -41,9 +41,9 @@ struct PredictParametersConfig {
     std::unordered_map<std::string, double> map_str_double; // "debug_ratio":0.5
     std::unordered_map<std::string, std::string> map_str_string; // "str": "subcats"
     
-    std::unordered_map<std::string, std::vector<double>> map_str_double_list; //"double_list":"$double=0.33,0.0"
-    std::unordered_map<std::string, std::vector<int>> map_str_int_list; // "int_list":"$int=50,0"
-    std::unordered_map<std::string, std::vector<std::string>> map_str_str_list; // "str_list":"$string=cat,subcat"
+    std::unordered_map<std::string, std::vector<double>> map_str_double_list; //"double_list":[0.33,0.0]
+    std::unordered_map<std::string, std::vector<int>> map_str_int_list; // "int_list":[50,0]
+    std::unordered_map<std::string, std::vector<std::string>> map_str_str_list; // "str_list":["cat","subcat"]
     
     // std::unordered_map<std::string, Param_base*> map_str_param;
     std::unordered_map<std::string, CallBackMethod> param_get_method;
