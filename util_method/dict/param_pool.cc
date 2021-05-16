@@ -2,7 +2,7 @@
  * @Author: Lohnwave
  * @Date: 2021-03-06 11:24:34
  * @LastEditors: Lohnwave
- * @LastEditTime: 2021-03-27 15:48:17
+ * @LastEditTime: 2021-05-16 16:32:22
  * @Descripttion: 
  * @version: 
  */
@@ -117,9 +117,19 @@ bool ParamPool::AddParam(Json::Value& param_list, uint8_t param_buf_index) {
                 param_buffers_[param_buf_index]->param_get_method.insert({*it, std::bind(&ParamPool::GetDouble, this, _1)});
                 break;
             }
-            case Json::stringValue:
-                ParseStrValue(*it, param_list[*it].asString(), param_buf_index);
-            break;
+            case Json::stringValue: {
+                param_buffers_[param_buf_index]->map_str_string.insert({*it, param_list[*it].asString()});
+                param_buffers_[param_buf_index]->param_get_method.insert({*it, std::bind(&ParamPool::GetString, this, _1)});
+                break;
+            }
+            case Json::arrayValue: {
+                bool res = ParseArrayValue(*it, param_list[*it], param_buf_index);
+                if (!res)
+                {
+                    return false;
+                }
+                break;
+            }
             default : {
                 LOG_ERROR << *it << "'s type not add in ParamPool!";
                 break;
@@ -128,45 +138,95 @@ bool ParamPool::AddParam(Json::Value& param_list, uint8_t param_buf_index) {
     }
     return true;
 }
-bool ParamPool::ParseStrValue(
+bool ParamPool::ParseArrayValue(
     const std::string& param_name, 
-    const std::string& content, 
+    Json::Value& array,
     uint8_t param_buf_index) {
-    if (!StringUtil::startWith(content, "$")) {
-        param_buffers_[param_buf_index]->map_str_string.insert({param_name, content});
-        param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetString, this, _1)});
-        return true;
+    param_buffers_[param_buf_index]->array_size[param_name] = array.size();
+    Json::ValueType array_type;
+    Json::UInt first_idx = 0;
+    if (array.size() > 0)
+    {
+        switch(array[first_idx].type())
+        {
+            case Json::intValue: 
+            {
+                param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetIntList, this, _1)});
+                array_type = Json::intValue;
+                break;
+            }
+            case Json::realValue:
+            {
+                param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetDoubleList, this, _1)});
+                array_type = Json::realValue;
+                break;
+            }
+            case Json::stringValue:
+            {
+                param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetStringList, this, _1)});
+                array_type = Json::stringValue;
+                break;
+            }
+            default : 
+            {
+                LOG_ERROR << param_name << " array element not int/double/string...";
+                return false;
+            }
+        }
     }
-    int iStartPos = content.rfind("=");
-    iStartPos = (iStartPos == -1)?0:(iStartPos+1);
-    if (StringUtil::startWith(content, "$int")) {
-        std::vector<std::string> split_list;
-        StringUtil::split(content.substr(iStartPos), ',', split_list);
-        for (uint32_t i = 0; i < split_list.size(); ++ i) {
-            param_buffers_[param_buf_index]->map_str_int_list[param_name].emplace_back(std::stoi(split_list[i]));
+    else
+    {
+        return true; // 无法知道元素类型 则获取时适配各种类型
+    }
+
+    for (Json::Value::UInt i = 0; i < array.size() ; ++ i)
+    {
+        Json::Value& cur_element = array[i];
+        switch(cur_element.type())
+        {
+            case Json::intValue : 
+            {
+                if (array_type != Json::intValue)
+                {
+                    LOG_ERROR << param_name << " array element type not equal..";
+                    return false;
+                }
+                param_buffers_[param_buf_index]->map_str_int_list[param_name].emplace_back(cur_element.asInt());
+                break;
+            }
+            case Json::realValue : 
+            {
+                if (array_type != Json::realValue)
+                {
+                    LOG_ERROR << param_name << " array element type not equal..";
+                    return false;
+                }
+                param_buffers_[param_buf_index]->map_str_double_list[param_name].emplace_back(cur_element.asDouble());
+                break;
+            }
+            case Json::stringValue : 
+            {
+                if (array_type != Json::stringValue)
+                {
+                    LOG_ERROR << param_name << " array element type not equal..";
+                    return false;
+                }
+                param_buffers_[param_buf_index]->map_str_str_list[param_name].emplace_back(cur_element.asString());
+                break;
+            }
+            default :
+            {
+                LOG_ERROR << param_name << " array element type not int/double/string..";
+                return false;
+            }
         }
-        param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetIntList, this, _1)});
-    } else if (StringUtil::startWith(content, "$double")) {
-        std::vector<std::string> split_list;
-        StringUtil::split(content.substr(iStartPos), ',', split_list);
-        for (uint32_t i = 0; i < split_list.size(); ++ i) {
-            param_buffers_[param_buf_index]->map_str_double_list[param_name].emplace_back(std::stod(split_list[i]));
-        }
-        param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetDoubleList, this, _1)});
-    } else if (StringUtil::startWith(content, "$string")) {
-        std::vector<std::string> split_list;
-        StringUtil::split(content.substr(iStartPos), ',', split_list);
-        param_buffers_[param_buf_index]->map_str_str_list.insert({param_name, split_list});
-        param_buffers_[param_buf_index]->param_get_method.insert({param_name, std::bind(&ParamPool::GetStringList, this, _1)});
-    } else {
-        return false;
     }
     return true;
 }
 void* ParamPool::GetInt(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_int.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_int.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         static int default_int = 0;
         return &default_int;
     }
@@ -175,7 +235,7 @@ void* ParamPool::GetInt(const std::string& param_name) {
 void* ParamPool::GetDouble(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_double.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_double.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         static double default_double = 0.0;
         return &default_double;
     }
@@ -184,7 +244,7 @@ void* ParamPool::GetDouble(const std::string& param_name) {
 void* ParamPool::GetString(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_string.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_string.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         static std::string default_string = "";
         return &default_string;
     }
@@ -193,7 +253,7 @@ void* ParamPool::GetString(const std::string& param_name) {
 void* ParamPool::GetIntList(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_int_list.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_int_list.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         static std::vector<int> default_int_list;
         return &default_int_list;
     }
@@ -202,7 +262,7 @@ void* ParamPool::GetIntList(const std::string& param_name) {
 void* ParamPool::GetDoubleList(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_double_list.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_double_list.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         static std::vector<double> default_double_list;
         return &default_double_list;
     }
@@ -211,7 +271,7 @@ void* ParamPool::GetDoubleList(const std::string& param_name) {
 void* ParamPool::GetStringList(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->map_str_str_list.find(param_name);
     if (it == param_buffers_[param_buf_index_]->map_str_str_list.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // OG_ERROR << param_name << " not find!";
         static std::vector<std::string> default_string_list;
         return &default_string_list;
     }
@@ -220,7 +280,7 @@ void* ParamPool::GetStringList(const std::string& param_name) {
 void* ParamPool::GetPredictParam(const std::string& param_name) {
     auto it = param_buffers_[param_buf_index_]->param_get_method.find(param_name);
     if (it == param_buffers_[param_buf_index_]->param_get_method.end()) {
-        LOG_ERROR << param_name << " not find!";
+        // LOG_ERROR << param_name << " not find!";
         return nullptr;
     }
     auto func = it->second;

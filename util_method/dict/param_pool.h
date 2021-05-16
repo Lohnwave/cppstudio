@@ -2,7 +2,7 @@
  * @Author: Lohnwave
  * @Date: 2021-03-27 13:31:32
  * @LastEditors: Lohnwave
- * @LastEditTime: 2021-03-27 15:47:42
+ * @LastEditTime: 2021-05-16 16:22:13
  * @Descripttion: 
  * @version: 
  */
@@ -47,6 +47,7 @@ struct PredictParametersConfig {
     
     // std::unordered_map<std::string, Param_base*> map_str_param;
     std::unordered_map<std::string, CallBackMethod> param_get_method;
+    std::unordered_map<std::string, int> array_size;
 };
 typedef std::shared_ptr<PredictParametersConfig> ParametersConfigPtr;
 class ParamPool {
@@ -61,7 +62,8 @@ class ParamPool {
     int Init(const std::string& path, std::vector<std::string>& conf_names);
     std::string ParamToString();
     bool AddParam(Json::Value& param_list, uint8_t param_buf_index);
-    bool ParseStrValue(const std::string& param_name, const std::string& content, uint8_t param_buf_index);
+    // bool ParseStrValue(const std::string& param_name, const std::string& content, uint8_t param_buf_index);
+    bool ParseArrayValue(const std::string& param_name, Json::Value& array, uint8_t param_buf_index);
     void* GetInt(const std::string& param_name);
     void* GetDouble(const std::string& param_name);
     void* GetString(const std::string& param);
@@ -83,12 +85,17 @@ class ParamPool {
                 return true;
             }
         }
-        LOG_WARNING << param_name << " not find";
+        // LOG_WARNING << param_name << " not find";
         return false;
     }
     template <typename container>
     bool GetVecParam(const std::string& param_name, container& param) {
-        if (ParamIsRegistered(param_name)) {
+        int vec_size = -1;
+        if (param_buffers_[param_buf_index_]->array_size.find(param_name) != param_buffers_[param_buf_index_]->array_size.end()) 
+        {
+            vec_size = param_buffers_[param_buf_index_]->array_size[param_name];
+        }
+        if (ParamIsRegistered(param_name) || vec_size == 0) {
             container* param_ptr = static_cast<container*>(GetPredictParam(param_name));
             if (param_ptr != nullptr) {
                 if (param.size() > 0) {
@@ -100,7 +107,7 @@ class ParamPool {
                 return true;
             }
         }
-        LOG_WARNING << param_name << " not find";
+        //LOG_WARNING << param_name << " not find";
         return false;
     }
  private:

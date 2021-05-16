@@ -2,7 +2,7 @@
  * @Author: Lohnwave
  * @Date: 2021-03-27 13:10:24
  * @LastEditors: Lohnwave
- * @LastEditTime: 2021-03-27 14:30:54
+ * @LastEditTime: 2021-05-16 16:33:56
  * @Descripttion: 
  * @version: 
  */
@@ -22,22 +22,16 @@ TEST(param_pool, conf1) {
     EXPECT_TRUE(param_pool!=nullptr);
     param_pool->Init(conf_path, conf_names);
     LOG_INFO << param_pool->ParamToString();
-    std::vector<std::string>* test_str_list = static_cast<std::vector<std::string>*>(param_pool->GetPredictParam("test_str_list"));
-    std::stringstream ret;
-    for (auto it = test_str_list->begin(); it != test_str_list->end(); ++ it) {
-        if (it != test_str_list->begin()) {
-            ret << ",";
-        }
-        ret << *it;
+    std::vector<std::string> str_list;
+    param_pool->GetVecParam("test_str_list", str_list);
+    for (uint32_t i = 0; i < str_list.size(); ++ i)
+    {
+        LOG_INFO << "test_str_list," << str_list[i];
     }
-    LOG_INFO << "GetPredictParam: test_str_list=" << ret.str();
-    std::string* str_test = static_cast<std::string*>(param_pool->GetPredictParam("test_string"));
-    LOG_INFO << "GetPredictParam: test_string=" << *str_test;
-    double* param_test_num = static_cast<double*>(param_pool->GetPredictParam("test_num"));
-    if (param_test_num==nullptr) {
-        LOG_INFO << "param_test_num=nullptr";
-    } else {
-        LOG_INFO << "param_test_num=" << *param_test_num;
+    std::vector<int> int_list;
+    param_pool->GetVecParam("test_int_list", int_list);
+    for (uint32_t i = 0; i < str_list.size(); ++ i)
+    {
+        LOG_INFO << "test_int_list," << int_list[i];
     }
-    param_pool->GetPredictParam("test_no");
 }

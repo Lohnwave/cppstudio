@@ -1,5 +1,5 @@
 {
     "test_string":"Type: int, double, string, stringList, intList, doubleList...",
-    "test_str_list":"$string=Lohn,Jack",
-    "test_int_list":"$int=233,123"
+    "test_str_list":["Lohn","Jack"],
+    "test_int_list":[233,123]
 }
